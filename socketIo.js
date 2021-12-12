@@ -15,6 +15,6 @@ io.on("connection", (socket) => {
 
   socket.on("message-from-client", (msg) => {
     console.log("received from client: " + msg);
-    socket.emit("message-from-server", msg);
+    socket.broadcast.emit("message-from-server", msg);
   });
 });
