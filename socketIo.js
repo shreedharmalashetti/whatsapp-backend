@@ -32,7 +32,6 @@ io.on("connection", (socket) => {
     console.log("socket io disconnected");
   });
 
-<<<<<<< HEAD
   socket.on("create", async (chatName, cb) => {
     try {
       const chat = new Chat({
@@ -74,10 +73,5 @@ io.on("connection", (socket) => {
   socket.on("message", (chat, msg) => {
     const toChatId = chat.id;
     socket.to(toChatId).emit("message", chat, msg);
-=======
-  socket.on("message-from-client", (msg) => {
-    console.log("received from client: " + msg);
-    socket.broadcast.emit("message-from-server", msg);
->>>>>>> bda6b2d7ace7b748a667f966b6c393c5abe7ec29
   });
 });
