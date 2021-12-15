@@ -70,6 +70,11 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("leave", async (chat, cb) => {
+    await Chat.findOneAndDelete({ id: chat.id, userId: socket.user.id });
+    cb();
+  });
+
   socket.on("message", (chat, msg) => {
     const toChatId = chat.id;
     socket.to(toChatId).emit("message", chat, msg);
