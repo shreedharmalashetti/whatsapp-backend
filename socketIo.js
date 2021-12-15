@@ -1,6 +1,6 @@
 import { io } from "./server.js";
 import jwt from "jsonwebtoken";
-import { Chat, getNewId, Message } from "./models/index.js";
+import { Chat, User, getNewId, Message } from "./models/index.js";
 
 const jwtSecret = "jksfdkdfsfhsdajklfhrskjlhfaslkhaklsjdhkdsj";
 
@@ -21,12 +21,15 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("socket io connected", socket.user);
+  console.log("socket io connected", socket.user.name);
   socket.emit("chats", socket.chats);
 
+  socket.join(socket.user.id);
   for (let c of socket.chats) {
     socket.join(c.id);
+    console.log(`${socket.user.name} joined ${c.name}`);
   }
+  console.log("\n");
 
   socket.on("disconnect", () => {
     console.log("socket io disconnected");
@@ -50,8 +53,12 @@ io.on("connection", (socket) => {
 
   socket.on("join", async (chatId, cb) => {
     try {
-      const chat = await Chat.findOne({ id: chatId });
+      const chat1 = await Chat.findOne({ id: chatId });
+      const chat2 = await User.findOne({ id: chatId });
+      const chat = chat1 || chat2;
+
       if (!chat) return cb("", "chat not found");
+
       let c = await Chat.findOne({ userId: socket.user.id, id: chatId });
       if (c) return cb("", "you already joined to this chat");
 
@@ -59,7 +66,7 @@ io.on("connection", (socket) => {
         userId: socket.user.id,
         id: chat.id,
         name: chat.name,
-        type: chat.type,
+        type: chat.type || "personal",
       });
 
       await c.save();
@@ -75,8 +82,14 @@ io.on("connection", (socket) => {
     cb();
   });
 
-  socket.on("message", (chat, msg) => {
-    const toChatId = chat.id;
-    socket.to(toChatId).emit("message", chat, msg);
+  socket.on("message", (toChat, msg) => {
+    console.log("to", toChat.id);
+    let fromChat = { ...toChat };
+    if (toChat.type == "personal") {
+      fromChat.id = socket.user.id;
+      fromChat.name = socket.user.name;
+    }
+
+    socket.to(toChat.id).emit("message", fromChat, msg);
   });
 });
