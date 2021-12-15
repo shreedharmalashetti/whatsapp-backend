@@ -59,7 +59,7 @@ io.on("connection", (socket) => {
         userId: socket.user.id,
         id: chat.id,
         name: chat.name,
-        type: "group",
+        type: chat.type,
       });
 
       await c.save();
