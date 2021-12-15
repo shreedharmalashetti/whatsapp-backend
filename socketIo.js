@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
     try {
       const chat1 = await Chat.findOne({ id: chatId });
       const chat2 = await User.findOne({ id: chatId });
-      const chat = chat1 || chat2;
+      const chat = chat1 ? chat1 : chat2;
 
       if (!chat) return cb("", "chat not found");
 
